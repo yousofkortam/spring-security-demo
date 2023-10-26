@@ -9,9 +9,14 @@ import com.example.jwtsecuritydemo.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -32,7 +37,9 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
-        return jwtService.generateToken(user.getUsername());
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(user.getRole().name()));
+        return jwtService.generateToken(user.getUsername(), authorities);
     }
 
     public String authenticate(LoginRequest login) {
@@ -45,7 +52,9 @@ public class AuthService {
         final User user = userRepository.findByUsername(login.getUsername()).orElseThrow(
                 () -> new UsernameNotFoundException("invalid username or password")
         );
-        return jwtService.generateToken(user.getUsername());
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(user.getRole().name()));
+        return jwtService.generateToken(user.getUsername(), authorities);
     }
 
 }
